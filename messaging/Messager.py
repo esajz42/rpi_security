@@ -49,7 +49,7 @@ class Messager(object):
         Only works for US numbers (assumes country code is 1).
 
         Inputs:
-            phone_number - String with number and domain of a cell phone
+            phone_address - String with number and domain of a cell phone
                            ex: 1234567890@txt.att.net #att
                                1234567890@tmomail.net #tmobile
                                1234567890@page.nextel.com #sprint pcs
@@ -58,5 +58,19 @@ class Messager(object):
             message - String containing message to send
         """
         self.server.sendmail(self.username, phone_address, message)
+
+    def email(self, email_address, message):
+        """Method to send an email message (currently text only)
+
+        Inputs:
+            email_address - An email address
+                            ex: buggsbunny@gmail.com
+                                porkypig@yahoo.com
+
+            message - String containing message to send
+        """
+        self.server.sendmail(self.username, email_address, message)
+
+
 
 
