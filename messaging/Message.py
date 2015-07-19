@@ -57,6 +57,6 @@ class Message(object):
 
             message - String containing message to send
         """
-        server.sendmail(self.username, phone_address, message)
+        self.server.sendmail(self.username, phone_address, message)
 
 
