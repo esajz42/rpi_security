@@ -33,8 +33,8 @@ class Uploader(object):
         subprocess.call(["dropbox_uploader.sh", "upload", local_file, "/"])
 
 #    def _connect_to_dropbox_(self):
-#        app_key = '25jm9fcwqp7dsed'
-#        app_secret = 'ls3m6raawi3av6u'
+#        app_key = 'askdasdasdasd'
+#        app_secret = 'asdasdasdasd'
 #        flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
 #        authorize_url = flow.start()
 #        print '1. Go to: ' + authorize_url
