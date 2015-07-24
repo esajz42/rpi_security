@@ -16,50 +16,60 @@ class SecurityCamera(object):
         """
         self.camera = picamera.PiCamera()
         self.fps = fps
+        self.change_threshold = change_threshold
         self.messager_list = messager_list
+        self.uploader_list = messager_list
         self.record = False
 
-    def start_camera():
+    def start_camera(self):
         self.record = True
         while self.record:
-            im_name = strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg"
-            camera.capture(im_name)
-            new_image = imread(im_name)
+            self.im_name = strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg"
+            self.camera.capture(self.im_name)
+            new_image = imread(self.im_name)
+
             if not hasattr(self, 'ref_image'):
                 self.ref_image =  new_image
                 self.start_camera()
-            elif hasattr(self, 'cur_image'):
-                self.ref_image = self.cur_image
+
+            if not hasattr(self, 'cur_image'):
                 self.cur_image = new_image
             
             if self.change_monitor():
-                self.messager()
+                self.message()
+                self.upload()
 
+            print 'loopin!'
             sleep(1.0 / self.fps)
+            
+            self.ref_image = self.cur_image
+            delattr(self, "cur_image")
 
-    def stop_camera():
+    def stop_camera(self):
         self.record = False
 
-    def change_monitor():
+    def change_monitor(self):
         """ Method that monitors still frames for change.
         """
-        ref_im_total = np.sum(ref_im) 
-        cur_im_total = np.sum(cur_im)
-        diff_percent = np.abs(ref_im_total - curr_im_total) / ref_im_total
+        ref_im_total = np.float(np.sum(self.ref_image))
+        cur_im_total = np.float(np.sum(self.cur_image))
+        diff_percent = np.abs(ref_im_total - cur_im_total) / ref_im_total * 100.0
+        print diff_percent
         if diff_percent >= self.change_threshold:
             return True
-        else
+        else:
             return False
 
-    def message():
+    def message(self):
         """ Sends emails, mms, or sms messages by looping over messager 
         objects in messager list. 
         """
-        for messager in self.messager_list()
+        for messager in self.messager_list:
            messager.send()
 
-    def upload():
+    def upload(self):
         """ Uploads imagery to cloud repositories.
         """
-        for uploader in uploader_list():
-            uploader.send()
+        for uploader in self.uploader_list:
+            print os.path.join(os.getcwd(), self.im_name)
+            uploader.send(os.path.join(os.getcwd(), self.im_name))
