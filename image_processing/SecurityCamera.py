@@ -11,7 +11,7 @@ class SecurityCamera(object):
     """ Main class for monitoring for change between still images.
     """
 
-    def __init__(self, fps=1, change_threshold=5, messager_list=None):
+    def __init__(self, fps=1, change_threshold=5, messager_list=None, uploader_list=None):
         """ Initializes an instance of SecurityCamera.
         """
         self.camera = picamera.PiCamera()
@@ -47,17 +47,19 @@ class SecurityCamera(object):
         cur_im_total = np.sum(cur_im)
         diff_percent = np.abs(ref_im_total - curr_im_total) / ref_im_total
         if diff_percent >= self.change_threshold:
-            change = True
+            return True
         else
-            change = False
-        return change
+            return False
 
     def message():
         """ Sends emails, mms, or sms messages by looping over messager 
         objects in messager list. 
         """
-        for m in self.messenger_list()
-           messenger
+        for messager in self.messager_list()
+           messager.send()
 
     def upload():
-        pass
+        """ Uploads imagery to cloud repositories.
+        """
+        for uploader in uploader_list():
+            uploader.send()
