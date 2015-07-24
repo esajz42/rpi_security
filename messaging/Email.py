@@ -49,7 +49,7 @@ class Email(object):
         server.login(self.username, self.password)
         return server
 
-    def email(self, email_address, message):
+    def send(self, email_address, message):
         """Method to send an email message (currently text only)
 
         Inputs:
