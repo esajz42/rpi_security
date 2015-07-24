@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import os
 import picamera
 import numpy as np
+from scipy.misc import imread
 from time import sleep, strftime
 
 
@@ -9,10 +11,10 @@ class SecurityCamera(object):
     """ Main class for monitoring for change between still images.
     """
 
-    def __init__(self, fps=1, change_threshold=5, messager_list=None,):
-        """ Initializes an instance of ChangeDetection.
+    def __init__(self, fps=1, change_threshold=5, messager_list=None):
+        """ Initializes an instance of SecurityCamera.
         """
-        self.camera = picamera.PiCamera()i
+        self.camera = picamera.PiCamera()
         self.fps = fps
         self.messager_list = messager_list
         self.record = False
@@ -20,8 +22,15 @@ class SecurityCamera(object):
     def start_camera():
         self.record = True
         while self.record:
-            im_name = strftime("%Y%m%d%H%M%S") + "rpi_security.jpg"
+            im_name = strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg"
             camera.capture(im_name)
+            new_image = imread(im_name)
+            if not hasattr(self, 'ref_image'):
+                self.ref_image =  new_image
+                self.start_camera()
+            elif hasattr(self, 'cur_image'):
+                self.ref_image = self.cur_image
+                self.cur_image = new_image
             self.change_monitor()
             sleep(1.0 / self.fps)
 
@@ -44,7 +53,8 @@ class SecurityCamera(object):
         """ Sends emails, mms, or sms messages by looping over messager 
         objects in messager list. 
         """
-        pass
+        for m in self.messenger_list()
+           messenger
 
     def upload():
         pass
