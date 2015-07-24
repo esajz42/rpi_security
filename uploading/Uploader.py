@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import os
-#from  dbupload import DropboxConnection
-#import dropbox
 import subprocess
 
 """Uploader.py

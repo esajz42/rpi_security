@@ -31,7 +31,10 @@ class SecurityCamera(object):
             elif hasattr(self, 'cur_image'):
                 self.ref_image = self.cur_image
                 self.cur_image = new_image
-            self.change_monitor()
+            
+            if self.change_monitor():
+                self.messager()
+
             sleep(1.0 / self.fps)
 
     def stop_camera():
