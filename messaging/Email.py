@@ -68,6 +68,7 @@ class Email(object):
             msg = MIMEMultipart()
             msg['To'] = self.email_address
             msg['From'] = 'rpi_security'
+            msg['Subject'] = 'Home Security Alert'
 
             msgText = MIMEText(self.message)
             msgText.set_charset("ISO-8859")
