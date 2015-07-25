@@ -3,6 +3,7 @@
 import os
 import picamera
 import numpy as np
+import subprocess
 from scipy.misc import imread
 from time import sleep, strftime
 
@@ -70,6 +71,5 @@ class SecurityCamera(object):
     def upload(self):
         """ Uploads imagery to cloud repositories.
         """
-        for uploader in self.uploader_list:
-            print os.path.join(os.getcwd(), self.im_name)
-            uploader.send(os.path.join(os.getcwd(), self.im_name))
+        fname = os.path.join(os.getcwd(), self.im_name)
+        subprocess.call(["dropbox_uploader.sh", "upload", fname, "/"])
