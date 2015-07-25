@@ -41,6 +41,7 @@ class SecurityCamera(object):
                 self.cur_image = new_image
             
             if self.change_monitor():
+                print 'trigger'
                 self.message()
                 #self.upload() # slow to send to dropbox...
 
@@ -63,7 +64,7 @@ class SecurityCamera(object):
         #diff_percent = np.abs(ref_im_total - cur_im_total) / ref_im_total * 100.0
         diff_percent = (ref_im_total - cur_im_total) / ref_im_total * 100.0
 
-        print diff_percent
+        #print diff_percent
         if diff_percent >= self.change_threshold:
             return True
         else:
@@ -76,8 +77,10 @@ class SecurityCamera(object):
         for messager in self.messager_list:
             try:
                 messager.send(self.im_name)
-            except ValueError:
-                messager.send()
+            #except:
+                #messager.send()
+            except:
+                continue
 
     def upload(self):
         """ Uploads imagery to cloud repositories.

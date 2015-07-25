@@ -82,4 +82,3 @@ class Email(object):
 
             self.server.sendmail(self.username, self.email_address, msg.as_string())
 
-
