@@ -11,5 +11,6 @@ def remove_files(directory, extension, number_to_keep=10):
         if f.endswith(extension):
             flist += [f]
     
-    for f in flist[:-number_to_keep]
+    flist.sort() # in-place sort
+    for f in flist[:-number_to_keep+1]:
         os.remove(f)
