@@ -14,16 +14,16 @@ class SecurityCamera(object):
     """ Main class for monitoring for change between still images.
     """
 
-    def __init__(self, fps=1, change_threshold=5, messager_list=None):
+    def __init__(self, fps=1, change_threshold=5, messager_list=[]):
  
-#    def __init__(self, fps=1, change_threshold=5, messager_list=None, uploader_list=None):
+#    def __init__(self, fps=1, change_threshold=5, messager_list=[], uploader_list=[]):
         """ Initializes an instance of SecurityCamera.
         """
         self.camera = picamera.PiCamera()
         self.fps = fps
         self.change_threshold = change_threshold
         self.messager_list = messager_list
-        #self.uploader_list = messager_list
+        #self.uploader_list = uploader_list
         self.record = False
 
     def start_camera(self):
@@ -42,7 +42,7 @@ class SecurityCamera(object):
             
             if self.change_monitor():
                 self.message()
-                self.upload()
+                #self.upload() # slow to send to dropbox...
 
             sleep(1.0 / self.fps)
             
@@ -60,7 +60,9 @@ class SecurityCamera(object):
         """
         ref_im_total = np.float(np.sum(self.ref_image))
         cur_im_total = np.float(np.sum(self.cur_image))
-        diff_percent = np.abs(ref_im_total - cur_im_total) / ref_im_total * 100.0
+        #diff_percent = np.abs(ref_im_total - cur_im_total) / ref_im_total * 100.0
+        diff_percent = (ref_im_total - cur_im_total) / ref_im_total * 100.0
+
         print diff_percent
         if diff_percent >= self.change_threshold:
             return True
