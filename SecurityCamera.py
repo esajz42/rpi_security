@@ -73,9 +73,9 @@ class SecurityCamera(object):
         """
         for messager in self.messager_list:
             try:
-                messager.send()
-            except TypeError:
                 messager.send(self.im_name)
+            except ValueError:
+                messager.send()
 
     def upload(self):
         """ Uploads imagery to cloud repositories.

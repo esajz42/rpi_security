@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
 
 """Email.py
 
@@ -49,7 +52,7 @@ class Email(object):
         server.login(self.username, self.password)
         return server
 
-    def send(self):
+    def send(self, *args):
         """Method to send an email message (currently text only)
 
         Inputs:
@@ -59,8 +62,23 @@ class Email(object):
 
             message - String containing message to send
         """
-        self.server.sendmail(self.username, self.email_address, self.message)
+        if len(args) == 0:
+            self.server.sendmail(self.username, self.email_address, self.message)
+        else:
+            msg = MIMEMultipart()
+            msg['To'] = self.email_address
+            msg['From'] = 'rpi_security'
 
+            msgText = MIMEText(self.message)
+            msgText.set_charset("ISO-8859")
+            msg.attach(msgText)
 
+            with open(args[0], 'rb') as file_as_string:
+                attachment = MIMEImage(file_as_string.read())
+
+            attachment.add_header('Content-Disposition', 'attachment', filename=args[0])
+            msg.attach(attachment)
+
+            self.server.sendmail(self.username, self.email_address, msg.as_string())
 
 
