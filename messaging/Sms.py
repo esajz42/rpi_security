@@ -22,7 +22,6 @@ class Sms(object):
             phone_address - String with number and domain of a cell phone
                            ex: 1234567890@txt.att.net #att
                                1234567890@tmomail.net #tmobile
-                               1234567890@page.nextel.com #sprint pcs
                                1234567890@vtext.com #verizon
         Outputs:
             none
