@@ -12,14 +12,16 @@ class SecurityCamera(object):
     """ Main class for monitoring for change between still images.
     """
 
-    def __init__(self, fps=1, change_threshold=5, messager_list=None, uploader_list=None):
+    def __init__(self, fps=1, change_threshold=5, messager_list=None):
+ 
+#    def __init__(self, fps=1, change_threshold=5, messager_list=None, uploader_list=None):
         """ Initializes an instance of SecurityCamera.
         """
         self.camera = picamera.PiCamera()
         self.fps = fps
         self.change_threshold = change_threshold
         self.messager_list = messager_list
-        self.uploader_list = messager_list
+        #self.uploader_list = messager_list
         self.record = False
 
     def start_camera(self):
@@ -71,5 +73,8 @@ class SecurityCamera(object):
     def upload(self):
         """ Uploads imagery to cloud repositories.
         """
-        fname = os.path.join(os.getcwd(), self.im_name)
-        subprocess.call(["dropbox_uploader.sh", "upload", fname, "/"])
+        try:
+            fname = os.path.join(os.getcwd(), self.im_name)
+            subprocess.call(["dropbox_uploader.sh", "upload", fname, "/"])
+        except:
+            return
