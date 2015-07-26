@@ -4,19 +4,21 @@ computers to create a do-it-youself, inexpensive, no fee, security system.
 
 Python Dependencies:
 
-subprocess
+    subprocess
 
-picamera
+    picamera
 
-smtplib
+    smtplib
 
-numpy
+    flask
 
-scipy
+    numpy
 
-time
+    scipy
 
-os
+    time
+
+    os
 
 
 Other Dependencies:
