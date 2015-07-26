@@ -6,7 +6,6 @@ import numpy as np
 import subprocess
 from scipy.misc import imread
 from time import sleep, strftime
-
 from file_monitor.file_monitor import remove_files
 
 
@@ -16,17 +15,26 @@ class SecurityCamera(object):
 
     def __init__(self, fps=1, change_threshold=5, messager_list=[]):
  
-#    def __init__(self, fps=1, change_threshold=5, messager_list=[], uploader_list=[]):
         """ Initializes an instance of SecurityCamera.
         """
-        self.camera = picamera.PiCamera()
+        self.camera = self.create_camera(delay=0)
+            
         self.fps = fps
         self.change_threshold = change_threshold
         self.messager_list = messager_list
-        #self.uploader_list = uploader_list
         self.record = False
+    
+    def create_camera(self, delay=0):
+        try:
+            print "Attempting to start camera in " + str(delay) + " seconds."
+            sleep(delay)
+            return picamera.PiCamera()
+        except PiCameraMMALError:
+            print "There was an error trying to start the camera..."
+            self.create_camera(delay=10)
 
     def start_camera(self):
+        print "Starting camera motion decection."
         self.record = True
         while self.record:
             self.im_name = strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg"
@@ -61,10 +69,8 @@ class SecurityCamera(object):
         """
         ref_im_total = np.float(np.sum(self.ref_image))
         cur_im_total = np.float(np.sum(self.cur_image))
-        #diff_percent = np.abs(ref_im_total - cur_im_total) / ref_im_total * 100.0
         diff_percent = (ref_im_total - cur_im_total) / ref_im_total * 100.0
 
-        #print diff_percent
         if diff_percent >= self.change_threshold:
             return True
         else:
@@ -75,12 +81,13 @@ class SecurityCamera(object):
         objects in messager list. 
         """
         for messager in self.messager_list:
-            try:
-                messager.send(self.im_name)
+            messager.send(self.im_name)
+            #try:
+                #messager.send(self.im_name)
             #except:
                 #messager.send()
-            except:
-                continue
+            #except:
+                #continue
 
     def upload(self):
         """ Uploads imagery to cloud repositories.
