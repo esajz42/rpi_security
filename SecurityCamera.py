@@ -18,7 +18,6 @@ class SecurityCamera(object):
         """ Initializes an instance of SecurityCamera.
         """
         self.camera = self.create_camera(delay=0)
-            
         self.fps = fps
         self.change_threshold = change_threshold
         self.messager_list = messager_list
@@ -81,13 +80,10 @@ class SecurityCamera(object):
         objects in messager list. 
         """
         for messager in self.messager_list:
-            messager.send(self.im_name)
-            #try:
-                #messager.send(self.im_name)
-            #except:
-                #messager.send()
-            #except:
-                #continue
+            try:
+                messager.send(self.im_name)
+            except ValueError:
+                continue
 
     def upload(self):
         """ Uploads imagery to cloud repositories.

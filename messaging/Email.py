@@ -4,6 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
+from time import sleep
 
 """Email.py
 
@@ -47,9 +48,11 @@ class Email(object):
             server - An SMTP server object that can be used to send emails and
                      messages
         """
+        print "Logging in to " +  self.username + "."
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(self.username, self.password)
+        print "Logged in to " + self.username + "!"
         return server
 
     def send(self, *args):
@@ -80,5 +83,11 @@ class Email(object):
             attachment.add_header('Content-Disposition', 'attachment', filename=args[0])
             msg.attach(attachment)
 
-            self.server.sendmail(self.username, self.email_address, msg.as_string())
-
+            try:
+                print "Sending mail from " + self.username + " to " + self.email_address + "..."
+                self.server.sendmail(self.username, self.email_address, msg.as_string())
+                print "Sent mail successfully!"
+            except:
+                print "Sending mail failed, tryin again..."
+                sleep(1)
+                self.send(args)
