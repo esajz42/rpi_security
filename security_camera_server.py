@@ -1,8 +1,18 @@
 from flask import Flask, render_template, request
 from flask_auth import requires_auth
 
+import os
+import signal
+import pickle
 import datetime
+import threading
+import multiprocessing
 import subprocess
+import picamera
+from time import sleep
+
+from messaging.Email import Email
+from SecurityCamera import SecurityCamera
 
 app = Flask(__name__)
 
@@ -25,22 +35,25 @@ def camera_control():
     if request.form['submit'] == 'Start Camera':
         print 'starting camera'
         try:
-            stop(process_obj)
-            process_obj = create_process()
-        except NameError:
-            process_obj = create_process()
-        return 'Camera enabled'
+            killer = subprocess.Popen('./kill_camera.sh')
+            sleep(1)
+            killer.terminate()
+            subprocess.Popen('python run_camera.py'.split())
+        except UnboundLocalError:
+            subprocess.Popen('python run_camera.py'.split())
+        return 'camera enabled'
 
     if request.form['submit'] == 'Stop Camera':
         print 'stoping camera'
         try:
-            process_obj.kill()
-        except NameError:
-            pass
+            killer.terminate()
+            subprocess.Popen('./kill_camera.sh')
+        except UnboundLocalError:
+            killer = subprocess.Popen('./kill_camera.sh')
+            sleep(1)
+            killer.terminate()
         return 'Camera disabled'
 
-def create_process():
-    return subprocess.Popen('./run_camera.sh', shell=True)
 
 if __name__ == "__main__":
     app.run(host='192.168.0.16', port=8080, debug=True)

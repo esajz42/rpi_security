@@ -1,9 +1,8 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 
 import os
 import picamera
 import numpy as np
-import subprocess
 from scipy.misc import imread
 from time import sleep, strftime
 from file_monitor.file_monitor import remove_files
@@ -22,20 +21,19 @@ class SecurityCamera(object):
         self.change_threshold = change_threshold
         self.messager_list = messager_list
         self.record = False
-    
+        
     def create_camera(self, delay=0):
         try:
             print "Attempting to start camera in " + str(delay) + " seconds."
             sleep(delay)
             return picamera.PiCamera()
-        except PiCameraMMALError:
+        except picamera.PiCameraMMALError:
             print "There was an error trying to start the camera..."
             self.create_camera(delay=10)
 
     def start_camera(self):
         print "Starting camera motion decection."
-        self.record = True
-        while self.record:
+        while True:
             self.im_name = strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg"
             self.camera.capture(self.im_name)
             new_image = imread(self.im_name)
@@ -59,9 +57,6 @@ class SecurityCamera(object):
 
             # Remove old images
             remove_files(os.getcwd(), '.jpg', number_to_keep=10)
-
-    def stop_camera(self):
-        self.record = False
 
     def change_monitor(self):
         """ Method that monitors still frames for change.
