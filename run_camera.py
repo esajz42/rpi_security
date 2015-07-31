@@ -13,12 +13,13 @@ import pickle
 messager_info = pickle.load(open('../rpi_security_tests/messager_info.pickle', 'rb'))
 
 mlist = [
-        Email.Email(messager_info[0], messager_info[1], messager_info[2][0], messager_info[3])
+        Email.Email(messager_info[0], messager_info[1], messager_info[2][0], messager_info[3]),
+Email.Email(messager_info[0], messager_info[1], messager_info[2][1], messager_info[3])
         ]
 
 camera = picamera.PiCamera()
 
-change_threshold = 2
+change_threshold
 fps = 100
 
 
@@ -40,7 +41,7 @@ while True:
 
     ref_total = np.float(np.sum(reference_image))
     cur_total = np.float(np.sum(cur_image))
-    diff_percent = (ref_total - cur_total) / ref_total * 100.0
+    diff_percent = np.abs((ref_total - cur_total)) / ref_total * 100.0
 
     print 'diff percent: ' + str(diff_percent) + '%'
 
