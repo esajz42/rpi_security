@@ -19,7 +19,7 @@ Email.Email(messager_info[0], messager_info[1], messager_info[2][1], messager_in
 
 camera = picamera.PiCamera()
 
-change_threshold
+change_threshold = 4.0
 fps = 100
 
 
