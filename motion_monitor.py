@@ -6,23 +6,32 @@ import cv2
 import time
 import copy
 import picamera
-from picamera.array import PiRGBArray   
 import threading
 from scipy.misc import imsave
 import numpy as np
+import pickle
+
+from messaging.Email import Email
+
+info = pickle.load(open("../rpi_security_tests/messager_info.pickle", "rb"))
+
+
+
 
 class MotionMonitor(threading.Thread):
     """ Class that watches a video stream for motion and will save image files if
     motion is detected.
     """
 
-    def __init__(self, name="MotionMonitor"):
+    def __init__(self, name="MotionMonitor", messager_list=[]):
         self._stopevent = threading.Event( )
         self._sleepperiod = 1.0
+        self.messager_list = messager_list
         threading.Thread.__init__(self, name=name)
         self.daemon = True
 
     def run(self):
+
         # Configure raspberry pi camera collection settings
         #camera = cv2.VideoCapture(0)
         camera = picamera.PiCamera()
@@ -40,6 +49,7 @@ class MotionMonitor(threading.Thread):
             camera.capture(stream, format="jpeg")
             data = np.fromstring(stream.getvalue(), dtype=np.uint8)
             image = cv2.imdecode(data, 1)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             
             # Convert frame to grayscale and blur
             frame = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -59,7 +69,7 @@ class MotionMonitor(threading.Thread):
 
             # Threshold image, morpholgical dilate, and extract contours
             thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
-            thresh = cv2.dilate(thresh, None, iterations=6)
+            thresh = cv2.dilate(thresh, None, iterations=2)
             (cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             print 'Number of contours found: ' + str(len(cnts))
             #imsave(time.strftime("%Y%m%d%H%M%S") + '_thresh.jpg', thresh)
@@ -68,7 +78,7 @@ class MotionMonitor(threading.Thread):
             for c in cnts:
 
                 print 'Contour area: ' + str(cv2.contourArea(c))
-                if cv2.contourArea(c) < 1000:
+                if cv2.contourArea(c) < 2000:
                     continue
 
                 (x, y, w, h) = cv2.boundingRect(c)
@@ -78,8 +88,13 @@ class MotionMonitor(threading.Thread):
                 cv2.putText(image, text, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2) 
             
                 # Save image locally if threshold criteria is met
-                imsave(time.strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg", image)
+                im_name = time.strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg"
+                imsave(im_name, image)
                 #imsave(time.strftime("%Y%m%d%H%M%S") + "_thresh_image.jpg", frame)
+                # Email image
+                for messager in self.messager_list:
+                    messager.send(im_name)
+                os.remove(im_name)
 
             # Update reference image 
             ref_frame = frame
