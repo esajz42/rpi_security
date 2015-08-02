@@ -50,18 +50,18 @@ def camera_control():
             pass
         return 'stopped motion detection'
 
-    if request.form['alert'] == 'Start Alerts':
-        print 'starting camera'
+    if request.form['motion'] == 'Start Alerts':
+        print 'starting alerts'
         try:
             watcher.join()
             del watcher
         except NameError:
-            watcher = FileWatcher()
-            watcher.start(messager_list = messager_list)
+            watcher = ImageWatcher(messager_list=messager_list)
+            watcher.start()
         return 'started alerts'
 
-    if request.form['alert'] == 'Stop Alerts':
-        print 'stoping camera'
+    if request.form['motion'] == 'Stop Alerts':
+        print 'stoping alerts'
         try:
             watcher.join()
             del watcher

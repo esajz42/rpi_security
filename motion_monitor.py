@@ -27,21 +27,16 @@ class MotionMonitor(threading.Thread):
         #camera = cv2.VideoCapture(0)
         camera = picamera.PiCamera()
         camera.framerate = 32
-        #camera.resolution = (1920, 1080)
-        #stream = PiRGBArray(camera, size=(1920, 1080))
-        #stream = PiRGBArray(camera)
 
         time.sleep(0.25)
 
         # Loop until stop method is called
-        stream = io.BytesIO()
         while not self._stopevent.isSet():
 
             text = "Unoccupied"
 
             # Grab a frame from stream
-            #camera.capture(stream, format="bgr")
-            #image = stream.array
+            stream = io.BytesIO()
             camera.capture(stream, format="jpeg")
             data = np.fromstring(stream.getvalue(), dtype=np.uint8)
             image = cv2.imdecode(data, 1)
@@ -49,22 +44,30 @@ class MotionMonitor(threading.Thread):
             # Convert frame to grayscale and blur
             frame = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             frame = cv2.GaussianBlur(frame, (21, 21), 0)
+            #imsave(time.strftime("%Y%m%m%H%M%S") + "_frame.jpg", frame)
            
            # Compute difference between current frame and reference frame
             try:
+                #print 'has ref_frame'
                 frame_delta = cv2.absdiff(ref_frame, frame)
             except NameError:
-                ref_frame = frame
+                #print 'doesnt have ref_frame'
+                ref_frame = copy.deepcopy(frame)
+                
                 frame_delta = cv2.absdiff(ref_frame, frame)
-            
+            #imsave(time.strftime("%Y%m%m%H%M%S") + "_frame_delta.jpg", frame_delta)
+
             # Threshold image, morpholgical dilate, and extract contours
             thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
-            tresh = cv2.dilate(thresh, None, iterations=2)
+            thresh = cv2.dilate(thresh, None, iterations=2)
             (cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            print 'Number of contours found: ' + str(len(cnts))
+            #imsave(time.strftime("%Y%m%d%H%M%S") + '_thresh.jpg', thresh)
 
             # Flag contours as motion if over area threshold (in pixels)
             for c in cnts:
 
+                print 'Contour area: ' + str(cv2.contourArea(c))
                 if cv2.contourArea(c) < 50:
                     continue
 
@@ -72,19 +75,15 @@ class MotionMonitor(threading.Thread):
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 text = "Occupied"
 
-            cv2.putText(image, text, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2) 
+                cv2.putText(image, text, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2) 
             
-            # Save image locally
-            #cv2.imwrite(time.strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg", image)
-            imsave(time.strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg", image)
-            imsave(time.strftime("%Y%m%d%H%M%S") + "_thresh_image.jpg", frame)
+                # Save image locally if threshold criteria is met
+                imsave(time.strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg", image)
+                #imsave(time.strftime("%Y%m%d%H%M%S") + "_thresh_image.jpg", frame)
 
             # Update reference image 
             ref_frame = frame
             
-            #cv2.imshow("Image", image)
-            #cv2.imshow("Threshold Image", frame)
-
             # Give chance to interupt
             self._stopevent.wait(self._sleepperiod)
             print 'looped'
@@ -97,5 +96,5 @@ class MotionMonitor(threading.Thread):
 if __name__ == "__main__":
     motion_obj = MotionMonitor()
     motion_obj.start( ) 
-    time.sleep(6.0)
+    time.sleep(10.0)
     motion_obj.join( )
