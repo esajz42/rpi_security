@@ -1,18 +1,17 @@
 from flask import Flask, render_template, request
 from flask_auth import requires_auth
 
-import os
-import signal
-import pickle
 import datetime
-import threading
-import multiprocessing
-import subprocess
-import picamera
-from time import sleep
+import pickle
 
 from messaging.Email import Email
-from SecurityCamera import SecurityCamera
+from motion_monitor import MotionMonitor
+from image_watcher import ImageWatcher
+
+messager_info = pickle.load(open("../rpi_security_tests/messager_info.pickle", "rb"))
+messager_list = [
+        Email(messager_info[0], messager_info[1], messager_info[2][0], messager_info[3])
+        ]
 
 app = Flask(__name__)
 
@@ -31,29 +30,44 @@ def camera_home():
 @app.route("/control", methods=['POST'])
 @requires_auth
 def camera_control():
+    
+    if request.form['motion'] == 'Start Motion Detection':
+        print 'starting motion detection'
+        try:
+            monitor.join()
+            del monitor
+        except NameError:
+            monitor = MotionMonitor()
+            monitor.start()
+        return 'looking for motion'
 
-    if request.form['submit'] == 'Start Camera':
+    if request.form['motion'] == 'Stop Motion Detection':
+        print 'stopping motion detection'
+        try:
+            monitor.join()
+            del monitor
+        except NameError:
+            pass
+        return 'stopped motion detection'
+
+    if request.form['alert'] == 'Start Alerts':
         print 'starting camera'
         try:
-            killer = subprocess.Popen('./kill_camera.sh')
-            sleep(1)
-            killer.terminate()
-            subprocess.Popen('python run_camera.py'.split())
-        except UnboundLocalError:
-            subprocess.Popen('python run_camera.py'.split())
-        return 'camera enabled'
+            watcher.join()
+            del watcher
+        except NameError:
+            watcher = FileWatcher()
+            watcher.start(messager_list = messager_list)
+        return 'started alerts'
 
-    if request.form['submit'] == 'Stop Camera':
+    if request.form['alert'] == 'Stop Alerts':
         print 'stoping camera'
         try:
-            killer.terminate()
-            subprocess.Popen('./kill_camera.sh')
-        except UnboundLocalError:
-            killer = subprocess.Popen('./kill_camera.sh')
-            sleep(1)
-            killer.terminate()
-        return 'Camera disabled'
-
+            watcher.join()
+            del watcher
+        except NameError:
+            pass
+        return 'stopped alerts'
 
 if __name__ == "__main__":
-    app.run(host='192.168.0.16', port=8080, debug=True)
+    app.run(host='192.168.0.16', port=8080, debug=False, threaded=True)
