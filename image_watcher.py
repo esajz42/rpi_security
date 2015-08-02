@@ -15,11 +15,12 @@ class ImageWatcher(threading.Thread):
         self.messager_list = messager_list
         self._stopevent = threading.Event()
         threading.Thread.__init__(self, name='ImageWatcher')
+        self.daemon = True
 
     def run(self):
         """ Method that finds certain types of files in a directory.
         """
-        
+       
         while not self._stopevent.isSet():
 
             # Loop over dir and find files of given type

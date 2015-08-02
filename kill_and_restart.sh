@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-sudo pkill -9 python
-
-
+pkill python
+sleep 5s
+python security_camera_server.py

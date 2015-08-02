@@ -20,9 +20,9 @@ class MotionMonitor(threading.Thread):
         self._stopevent = threading.Event( )
         self._sleepperiod = 1.0
         threading.Thread.__init__(self, name=name)
+        self.daemon = True
 
     def run(self):
-
         # Configure raspberry pi camera collection settings
         #camera = cv2.VideoCapture(0)
         camera = picamera.PiCamera()
@@ -59,7 +59,7 @@ class MotionMonitor(threading.Thread):
 
             # Threshold image, morpholgical dilate, and extract contours
             thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
-            thresh = cv2.dilate(thresh, None, iterations=2)
+            thresh = cv2.dilate(thresh, None, iterations=6)
             (cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             print 'Number of contours found: ' + str(len(cnts))
             #imsave(time.strftime("%Y%m%d%H%M%S") + '_thresh.jpg', thresh)
@@ -68,7 +68,7 @@ class MotionMonitor(threading.Thread):
             for c in cnts:
 
                 print 'Contour area: ' + str(cv2.contourArea(c))
-                if cv2.contourArea(c) < 50:
+                if cv2.contourArea(c) < 1000:
                     continue
 
                 (x, y, w, h) = cv2.boundingRect(c)
