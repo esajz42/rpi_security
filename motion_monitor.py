@@ -78,7 +78,7 @@ class MotionMonitor(threading.Thread):
             for c in cnts:
 
                 print 'Contour area: ' + str(cv2.contourArea(c))
-                if cv2.contourArea(c) < 2000:
+                if cv2.contourArea(c) < 5000:
                     continue
 
                 (x, y, w, h) = cv2.boundingRect(c)
