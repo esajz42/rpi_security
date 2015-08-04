@@ -6,7 +6,7 @@ import cv2
 import time
 import copy
 import picamera
-import threading
+import multiprocessing
 from scipy.misc import imsave
 import numpy as np
 import pickle
@@ -18,16 +18,16 @@ info = pickle.load(open("../rpi_security_tests/messager_info.pickle", "rb"))
 
 
 
-class MotionMonitor(threading.Thread):
+class MotionMonitor(multiprocessing.Process):
     """ Class that watches a video stream for motion and will save image files if
     motion is detected.
     """
 
     def __init__(self, name="MotionMonitor", messager_list=[]):
-        self._stopevent = threading.Event( )
+        #self._stopevent = threading.Event( )
         self._sleepperiod = 1.0
         self.messager_list = messager_list
-        threading.Thread.__init__(self, name=name)
+        multiprocessing.Process.__init__(self, name=name)
         self.daemon = True
 
     def run(self):
@@ -40,7 +40,8 @@ class MotionMonitor(threading.Thread):
         time.sleep(0.25)
 
         # Loop until stop method is called
-        while not self._stopevent.isSet():
+        #while not self._stopevent.isSet():
+        while True:
 
             text = "Unoccupied"
 
@@ -93,19 +94,22 @@ class MotionMonitor(threading.Thread):
                 #imsave(time.strftime("%Y%m%d%H%M%S") + "_thresh_image.jpg", frame)
                 # Email image
                 for messager in self.messager_list:
-                    messager.send(im_name)
+                    try:
+                        messager.send(im_name)
+                    except NameError:
+                        continue
                 os.remove(im_name)
 
             # Update reference image 
             ref_frame = frame
             
             # Give chance to interupt
-            self._stopevent.wait(self._sleepperiod)
+            #self._stopevent.wait(self._sleepperiod)
             print 'looped'
 
-    def join(self, timeout=None):
-        self._stopevent.set( )
-        threading.Thread.join(self, timeout)
+    #def join(self, timeout=1):
+        #self._stopevent.set( )
+        #threading.Thread.join(self, timeout)
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ def camera_control():
     if request.form['motion'] == 'Start Motion Detection':
         print 'starting motion detection'
         try:
-            monitor.join()
+            monitor.join(1)
             del monitor
         except NameError:
             monitor = MotionMonitor(messager_list=messager_list)
