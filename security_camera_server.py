@@ -9,11 +9,14 @@ import subprocess
 import sys
 import psutil
 
-from messaging.Email import Email
+from Email import Email
 from motion_monitor import MotionMonitor
 
 messager_info = pickle.load(open("../rpi_security_tests/messager_info.pickle", "rb"))
-messager_list = [Email(messager_info[0], messager_info[1], messager_info[2][0], messager_info[3])]
+messager_list = [
+        Email(messager_info[0], messager_info[1], messager_info[2][0], messager_info[3])]#,
+        #Email(messager_info[0], messager_info[1], messager_info[2][1], messager_info[3])
+                #]
 
 app = Flask(__name__)
 
@@ -42,10 +45,15 @@ def camera_control():
             monitor = MotionMonitor(messager_list=messager_list)
             monitor.daemon = True
             monitor.start()
-        return 'looking for motion'
+            return 'looking for motion'
+
+        while True:
+            if not monitor.is_alive():
+                monitor.join(1)
+                subprocess.Popen('./kill_server.sh', shell=True)
 
     if request.form['motion'] == 'Stop Everything':
-       subprocess.Popen('./kill_server.sh', shell=True)
+        subprocess.Popen('./kill_server.sh', shell=True)
 
 if __name__ == "__main__":
     app.run(host='192.168.0.16', port=8080, debug=False, threaded=False)

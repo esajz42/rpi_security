@@ -11,12 +11,9 @@ from scipy.misc import imsave
 import numpy as np
 import pickle
 
-from messaging.Email import Email
+from Email import Email
 
-info = pickle.load(open("../rpi_security_tests/messager_info.pickle", "rb"))
-
-
-
+from timeout import timeout, TimeoutError
 
 class MotionMonitor(multiprocessing.Process):
     """ Class that watches a video stream for motion and will save image files if
@@ -55,25 +52,20 @@ class MotionMonitor(multiprocessing.Process):
             # Convert frame to grayscale and blur
             frame = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             frame = cv2.GaussianBlur(frame, (21, 21), 0)
-            #imsave(time.strftime("%Y%m%m%H%M%S") + "_frame.jpg", frame)
            
            # Compute difference between current frame and reference frame
             try:
-                #print 'has ref_frame'
                 frame_delta = cv2.absdiff(ref_frame, frame)
             except NameError:
-                #print 'doesnt have ref_frame'
                 ref_frame = copy.deepcopy(frame)
                 
                 frame_delta = cv2.absdiff(ref_frame, frame)
-            #imsave(time.strftime("%Y%m%m%H%M%S") + "_frame_delta.jpg", frame_delta)
 
             # Threshold image, morpholgical dilate, and extract contours
             thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
             thresh = cv2.dilate(thresh, None, iterations=2)
             (cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             print 'Number of contours found: ' + str(len(cnts))
-            #imsave(time.strftime("%Y%m%d%H%M%S") + '_thresh.jpg', thresh)
 
             # Flag contours as motion if over area threshold (in pixels)
             for c in cnts:
@@ -94,17 +86,16 @@ class MotionMonitor(multiprocessing.Process):
                 #imsave(time.strftime("%Y%m%d%H%M%S") + "_thresh_image.jpg", frame)
                 # Email image
                 for messager in self.messager_list:
-                    try:
-                        messager.send(im_name)
-                    except NameError:
-                        continue
+                    #try:
+                        #messager.send(im_name)
+                    timeout(messager.send, args=[im_name], timeout_duration=10)
+                    #except TimeoutError:
+                        #continue
                 os.remove(im_name)
 
             # Update reference image 
             ref_frame = frame
             
-            # Give chance to interupt
-            #self._stopevent.wait(self._sleepperiod)
             print 'looped'
 
     #def join(self, timeout=1):
@@ -114,6 +105,6 @@ class MotionMonitor(multiprocessing.Process):
 
 if __name__ == "__main__":
     motion_obj = MotionMonitor()
-    motion_obj.start( ) 
+    motion_obj.start() 
     time.sleep(10.0)
-    motion_obj.join( )
+    motion_obj.join(1)
