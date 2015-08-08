@@ -7,13 +7,14 @@ import time
 import copy
 import picamera
 import multiprocessing
+import subprocess
 from scipy.misc import imsave
 import numpy as np
 import pickle
 
 from Email import Email
 
-from timeout import timeout, TimeoutError
+from timeout import timeout
 
 class MotionMonitor(multiprocessing.Process):
     """ Class that watches a video stream for motion and will save image files if
@@ -21,8 +22,6 @@ class MotionMonitor(multiprocessing.Process):
     """
 
     def __init__(self, name="MotionMonitor", messager_list=[]):
-        #self._stopevent = threading.Event( )
-        self._sleepperiod = 1.0
         self.messager_list = messager_list
         multiprocessing.Process.__init__(self, name=name)
         self.daemon = True
@@ -30,14 +29,12 @@ class MotionMonitor(multiprocessing.Process):
     def run(self):
 
         # Configure raspberry pi camera collection settings
-        #camera = cv2.VideoCapture(0)
         camera = picamera.PiCamera()
         camera.framerate = 32
 
         time.sleep(0.25)
 
         # Loop until stop method is called
-        #while not self._stopevent.isSet():
         while True:
 
             text = "Unoccupied"
@@ -83,24 +80,20 @@ class MotionMonitor(multiprocessing.Process):
                 # Save image locally if threshold criteria is met
                 im_name = time.strftime("%Y%m%d%H%M%S") + "_rpi_security.jpg"
                 imsave(im_name, image)
-                #imsave(time.strftime("%Y%m%d%H%M%S") + "_thresh_image.jpg", frame)
+                
                 # Email image
                 for messager in self.messager_list:
                     #try:
-                        #messager.send(im_name)
-                    timeout(messager.send, args=[im_name], timeout_duration=10)
+                    messager.send(im_name)
+                    #timeout(messager.send, args=[im_name], timeout_duration=10)
                     #except TimeoutError:
                         #continue
-                os.remove(im_name)
+                subprocess.call('rm *.jpg', shell=True)
 
             # Update reference image 
             ref_frame = frame
             
             print 'looped'
-
-    #def join(self, timeout=1):
-        #self._stopevent.set( )
-        #threading.Thread.join(self, timeout)
 
 
 if __name__ == "__main__":

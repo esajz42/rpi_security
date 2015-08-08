@@ -36,7 +36,7 @@ class Email(object):
         self.password = password
         self.email_address = email_address
         self.message = message
-        self.server = self.login()
+        # self.server = self.login()
 
     def login(self):
         """Logs into gmail account and returns an instance of an SMTP server
@@ -55,6 +55,9 @@ class Email(object):
         server.login(self.username, self.password)
         print "Logged in to " + self.username + "!"
         return server
+    
+    def logout(self, server):
+        server.close()
 
     def send(self, *args):
         """Method to send an email message
@@ -66,8 +69,10 @@ class Email(object):
 
             message - String containing message to send
         """
+        server = self.login()
         if len(args) == 0:
-            self.server.sendmail(self.username, self.email_address, self.message)
+            server.sendmail(self.username, self.email_address, self.message)
+            self.logout(server)
         else:
             msg = MIMEMultipart()
             msg['To'] = self.email_address
@@ -86,9 +91,11 @@ class Email(object):
 
             print "Sending mail from " + self.username + " to " + self.email_address + "..."
             try:
-                self.server.sendmail(self.username, self.email_address, msg.as_string())
+                server.sendmail(self.username, self.email_address, msg.as_string())
                 print "Sent mail successfully!"
+                self.logout(server)
             except:
+                self.logout(server)
                 print 'killin server from email'
                 subprocess.Popen('./kill_server.sh', shell=True)
-            
+

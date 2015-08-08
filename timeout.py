@@ -10,8 +10,8 @@ def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
     try:
         result = func(*args, **kwargs)
     except TimeoutError as exc:
-        result = default
-    finally:
+        # result = default
+    # finally:
         signal.alarm(0)
 
     return result
