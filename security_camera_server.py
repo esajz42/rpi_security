@@ -3,11 +3,13 @@
 from flask import Flask, render_template, request
 from flask_auth import requires_auth
 
+import io
 import datetime
 import pickle
 import subprocess
 import sys
 import psutil
+import picamera
 
 from Email import Email
 from motion_monitor import MotionMonitor
@@ -54,6 +56,18 @@ def camera_control():
 
     if request.form['motion'] == 'Stop Everything':
         subprocess.Popen('./kill_server.sh', shell=True)
+
+def gen(camera):
+    while True:
+        stream = io.BytesIO()
+        camera.capture(stream, format="jpeg")
+        frame = stream.read()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+@app.route("/video_feed")
+def video_feed():
+    return Response(gen(picamera.PiCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
     app.run(host='192.168.0.16', port=8080, debug=False, threaded=False)
