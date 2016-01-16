@@ -56,7 +56,7 @@ class Email(object):
         return server
 
     def send(self, *args):
-        """Method to send an email message (currently text only)
+        """Method to send an email message
 
         Inputs:
             email_address - An email address
@@ -83,11 +83,11 @@ class Email(object):
             attachment.add_header('Content-Disposition', 'attachment', filename=args[0])
             msg.attach(attachment)
 
+            print "Sending mail from " + self.username + " to " + self.email_address + "..."
             try:
-                print "Sending mail from " + self.username + " to " + self.email_address + "..."
                 self.server.sendmail(self.username, self.email_address, msg.as_string())
                 print "Sent mail successfully!"
             except:
-                print "Sending mail failed, tryin again..."
-                sleep(1)
-                self.send(args)
+                print 'killin server from email'
+                subprocess.Popen('./kill_server.py', shell=True)
+            

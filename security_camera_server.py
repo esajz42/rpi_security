@@ -14,9 +14,9 @@ from motion_monitor import MotionMonitor
 
 messager_info = pickle.load(open("../rpi_security_tests/messager_info.pickle", "rb"))
 messager_list = [
-        Email(messager_info[0], messager_info[1], messager_info[2][0], messager_info[3])]#,
-        #Email(messager_info[0], messager_info[1], messager_info[2][1], messager_info[3])
-                #]
+        Email(messager_info[0], messager_info[1], messager_info[2][0], messager_info[3]),
+        Email(messager_info[0], messager_info[1], messager_info[2][1], messager_info[3])
+        ]
 
 app = Flask(__name__)
 
